@@ -14,20 +14,15 @@ class LootImport implements ToCollection
      */
     public function collection(Collection $collection)
     {
-        // Assume the first row of the collection is the header.
         $headers = $collection->first()->toArray();
 
-        // Loop through the rest of the collection, starting from the second row.
-        foreach ($collection->slice(1) as $row) {
-            // Combine the headers with the row items to create an associative array.
-            $rowData = array_combine($headers, $row->toArray());
+        $collection->slice(1)->chunk(10)->each(function ($chunk) use ($headers) {
+            foreach ($chunk as $row) {
+                $rowData = array_combine($headers, $row->toArray());
+                $uniqueKey = ['id' => $rowData['id']];
 
-            // You may need to define which columns are used to determine "uniqueness" for firstOrCreate.
-            // For example, if 'id' is unique:
-            $uniqueKey = ['id' => $rowData['id']];
-
-            // Use firstOrCreate to either fetch the existing record or create a new one.
-            Loot::firstOrCreate($uniqueKey, $rowData);
-        }
+                Loot::firstOrCreate($uniqueKey, $rowData);
+            }
+        });
     }
 }
