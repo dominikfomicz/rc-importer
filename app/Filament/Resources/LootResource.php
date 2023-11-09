@@ -3,15 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\LootResource\Pages;
-use App\Filament\Resources\LootResource\RelationManagers;
 use App\Models\Loot;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -51,6 +54,7 @@ class LootResource extends Resource
                 Tables\Columns\TextColumn::make('date')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('item')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('response')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('instance')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('votes')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('note')->sortable()->searchable(),
             ])
@@ -71,7 +75,23 @@ class LootResource extends Resource
                                 $data['date_until'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
                             );
-                    })
+                    }),
+                SelectFilter::make('player')
+                    ->options(fn (): array => Loot::query()->pluck('player', 'player')->all())
+                    ->searchable(),
+                SelectFilter::make('instance')
+                    ->options(fn (): array => Loot::query()->pluck('instance', 'instance')->all())
+                    ->searchable(),
+            ], FiltersLayout::Modal)
+            ->filtersTriggerAction(
+                fn (Action $action) => $action
+                    ->button()
+                    ->label('Filters')
+                    ->slideOver()
+            )
+            ->groups([
+                Group::make('date')
+                    ->collapsible(),
             ])
             ->actions([
                     Tables\Actions\ViewAction::make()

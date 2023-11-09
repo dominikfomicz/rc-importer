@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Loot extends Model
 {
@@ -44,28 +46,10 @@ class Loot extends Model
         'owner',
     ];
 
-    /**
-     * Set the date attribute.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setDateAttribute($value)
+    protected static function booted()
     {
-        if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{2}$/', $value)) {
-            // Parse the date with a specified format
-            $date = Carbon::createFromFormat('d/m/y', $value);
-
-            // If the parsed date is before a certain threshold, you might want to add 100 years
-            if ($date->year < 2000) {
-                $date->addYears(100);
-            }
-
-            // Set the formatted date to the model's attribute
-            $this->attributes['date'] = $date->format('Y-m-d');
-        } else {
-            // If the date is not in the expected format or is null, set it to null
-            $this->attributes['date'] = null;
-        }
+        static::addGlobalScope('date_greater_than', function (Builder $builder) {
+            $builder->where('date', '>', Date::createFromFormat('Y-m-d', '2023-07-12'));
+        });
     }
 }
