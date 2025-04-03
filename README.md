@@ -1,51 +1,79 @@
 # RC Importer
 ### Importer for RCLootCouncil files
 
-## Installation
+This application imports and displays loot data from World of Warcraft's RCLootCouncil addon.
 
-### Run docker
+## Local Development
 
-```bash
-docker run --rm \
-    -u "$(id -u):$(id -g)" \
-    -v $(pwd):/var/www/html \
-    -w /var/www/html \
-    laravelsail/php81-composer:latest \
-    composer install --ignore-platform-reqs
-```
-
-### Run Laravel Sail
+### Using Docker Compose
 
 ```bash
-./vendor/bin/sail up -d
+# Clone the repository
+git clone https://github.com/your-repo/rc-importer.git
+cd rc-importer
+
+# Copy environment file
+cp .env.example .env
+
+# Build and start the containers
+docker-compose up -d
+
+# Install dependencies
+docker-compose exec app composer install
+docker-compose exec app npm install
+
+# Generate application key
+docker-compose exec app php artisan key:generate
+
+# Run migrations and seed the database
+docker-compose exec app php artisan migrate --seed
+
+# Build frontend assets
+docker-compose exec app npm run build
 ```
 
-### Install dependencies
+The application will be available at http://localhost:8080
+
+### Running Tests
 
 ```bash
-./vendor/bin/sail composer install && ./vendor/bin/sail npm i
+docker-compose exec app php artisan test
 ```
 
-### Build dependencies
+## AWS & Kubernetes Deployment
+
+The application is configured for deployment to AWS EKS (Elastic Kubernetes Service).
+
+### Prerequisites
+
+- AWS CLI configured with appropriate permissions
+- kubectl installed and configured
+- Access to an EKS cluster
+
+### Deployment Steps
+
+1. Edit the Kubernetes secrets file with your environment values:
 
 ```bash
-./vendor/bin/sail npm run dev
+# Edit kubernetes/secrets.yaml with your base64 encoded values
+nano kubernetes/secrets.yaml
 ```
 
-### Run the migrations and seed the database
+2. Run the deployment script:
 
 ```bash
-./vendor/bin/sail artisan migrate:fresh --seed
+# For first deployment with secrets
+./deploy-aws.sh --apply-secrets
+
+# For subsequent deployments
+./deploy-aws.sh
 ```
 
-### Tests
+## Test User
 
-```bash
-./vendor/bin/sail artisan test
+For local development, you can use the following test user:
+
 ```
-
-### Test user
-
-```angular2html
-test@mail.gov : 12345678
+Email: test@mail.gov
+Password: 12345678
 ```
